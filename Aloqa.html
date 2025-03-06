@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ro'zadorlar Uchun Ramazon Muborak</title>
+    <!-- Google Fonts -->
+    <link
+            href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap"
+            rel="stylesheet"
+    />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Lato', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #2c3e50, #4ca1af);
+            color: #f1c40f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background 0.5s ease-in-out;
+            overflow-y: auto;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .header {
+            margin-bottom: 20px;
+        }
+        .header .crescent {
+            font-size: 80px;
+            line-height: 1;
+        }
+        .header h1 {
+            margin: 10px 0;
+            font-size: 36px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        /* Iqtibos slider */
+        #quoteContainer {
+            position: relative;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            min-height: 80px;
+        }
+        #quote {
+            font-size: 24px;
+            font-style: italic;
+            opacity: 0;
+            animation: fadeInText 1s ease-in-out forwards;
+        }
+        .quote-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 28px;
+            cursor: pointer;
+            user-select: none;
+            color: #f1c40f;
+        }
+        .quote-nav.left {
+            left: 10px;
+        }
+        .quote-nav.right {
+            right: 10px;
+        }
+        /* Countdown, vaqt va progress */
+        #countdown,
+        #currentTime,
+        #ramadanDay {
+            font-size: 20px;
+            margin: 10px 0;
+            color: #ecf0f1;
+        }
+        #fastProgressContainer {
+            margin: 20px 0;
+        }
+        #progressBarWrapper {
+            background: #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 20px;
+            margin-bottom: 5px;
+        }
+        #fastProgressBar {
+            background: #f39c12;
+            width: 0%;
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        #fastProgressText {
+            font-size: 18px;
+        }
+        /* Tugmalar paneli */
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .buttons button {
+            background: #f39c12;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex: 1;
+            min-width: 140px;
+        }
+        .buttons button:hover {
+            background: #e67e22;
+        }
+        /* Tabs styling (Namoz Vaqtlari, Ramazon Ma'lumot, Qo'sh Namozlar) */
+        .tabs {
+            margin-top: 20px;
+        }
+        .tab-headers {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            border-bottom: 2px solid #f1c40f;
+            margin-bottom: 10px;
+        }
+        .tab-header {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-radius: 5px 5px 0 0;
+            transition: background 0.3s, border 0.3s;
+        }
+        .tab-header.active {
+            background: #f39c12;
+            border: 1px solid #f1c40f;
+            border-bottom: none;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        /* Modal Settings */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            text-align: left;
+            color: #f1c40f;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+        }
+        .modal-content label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        .modal-content input[type="range"],
+        .modal-content input[type="number"],
+        .modal-content input[type="time"] {
+            width: 100%;
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+        }
+        .modal-content button {
+            margin-top: 15px;
+            background: #f39c12;
+            border: none;
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        /* Animatsiyalar */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        @keyframes fadeInText {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="crescent">🌙</div>
+        <h1>Ramazon Muborak, Ro'zador!</h1>
+    </div>
+
+    <!-- Iqtibos slider -->
+    <div id="quoteContainer">
+        <div class="quote-nav left" onclick="prevQuote()">&#9664;</div>
+        <div id="quote">Yuklanmoqda...</div>
+        <div class="quote-nav right" onclick="nextQuote()">&#9654;</div>
+    </div>
+
+    <!-- Countdown timer -->
+    <div id="countdown">Qolgan vaqt: ...</div>
+
+    <!-- Ro'zadorlik progress bar -->
+    <div id="fastProgressContainer">
+        <div>Bugungi Ro'za jarayoni (Suhoor – Iftar):</div>
+        <div id="progressBarWrapper">
+            <div id="fastProgressBar"></div>
+        </div>
+        <div id="fastProgressText">0%</div>
+    </div>
+
+    <!-- Joriy vaqt -->
+    <div id="currentTime">Joriy vaqt: --:--:--</div>
+
+    <!-- Tugmalar paneli -->
+    <div class="buttons">
+        <button onclick="newQuote()">📝 Yangi iqtibos</button>
+        <button onclick="changeBackground()">🎨 Fonni o‘zgartirish</button>
+        <button onclick="copyQuote()">📋 Nusxalash</button>
+        <button onclick="toggleAuto()">⏱️ Auto/Stop</button>
+        <button onclick="toggleMusic()">🔊 Musiqa</button>
+        <button onclick="sharePage()">↗️ Share</button>
+        <button onclick="openSettings()">⚙️ Sozlamalar</button>
+    </div>
+
+    <!-- Tabs: Namoz Vaqtlari, Ramazon Ma'lumot, Qo'sh Namozlar & Qur'on -->
+    <div class="tabs">
+        <div class="tab-headers">
+            <div class="tab-header active" data-tab="namoz">Namoz Vaqtlari</div>
+            <div class="tab-header" data-tab="ramadan">Ramazon Ma'lumot</div>
+            <div class="tab-header" data-tab="extra">Qo'sh Namozlar & Qur'on</div>
+        </div>
+        <div id="namoz" class="tab-content active">
+            <h2>Namoz Vaqtlari</h2>
+            <table>
+                <tr>
+                    <th>Namoz</th>
+                    <th>Vaqt</th>
+                </tr>
+                <tr>
+                    <td>Fajr</td>
+                    <td>Suhoor (kirilgan): <span id="fajrTime">--:--</span></td>
+                </tr>
+                <tr>
+                    <td>Quyosh chiqishi</td>
+                    <td>06:30</td>
+                </tr>
+                <tr>
+                    <td>Dhuhr</td>
+                    <td>12:00</td>
+                </tr>
+                <tr>
+                    <td>Asr</td>
+                    <td>15:30</td>
+                </tr>
+                <tr>
+                    <td>Maghrib</td>
+                    <td>Iftar (kirilgan): <span id="maghribTime">--:--</span></td>
+                </tr>
+                <tr>
+                    <td>Isha</td>
+                    <td>20:00</td>
+                </tr>
+            </table>
+        </div>
+        <div id="ramadan" class="tab-content">
+            <h2>Ramazon Ma'lumot</h2>
+            <div id="ramadanDay">Ramazon kuni: ...</div>
+            <div id="duaOfTheDay">Dua: ...</div>
+            <div id="fastingTip">Roza Maslahati: ...</div>
+        </div>
+        <div id="extra" class="tab-content">
+            <h2>Qo'sh Namozlar va Qur'on Recitation</h2>
+            <form id="extraPrayersForm">
+                <div>
+                    <label>
+                        <input type="checkbox" id="tahajjud" />
+                        Tahajjud Namozi
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" id="duha" />
+                        Duha Namozi
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" id="tarawih" />
+                        Taravih Namozi (Oqib dimi?)
+                    </label>
+                </div>
+                <div style="margin-top:10px;">
+                    <label for="quranRecited">
+                        Qancha Qur'on oqidingiz (sahifa yoki juz):
+                    </label>
+                    <input
+                            type="number"
+                            id="quranRecited"
+                            placeholder="Masalan, 5"
+                            min="0"
+                            style="width:100%; padding:8px; border-radius:5px; border:none;"
+                    />
+                </div>
+                <div style="margin-top:10px;">
+                    <button type="button" onclick="saveExtraPrayers()">Saqlash</button>
+                </div>
+            </form>
+            <div id="extraPrayersOutput" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Sozlamalar -->
+<div id="settingsModal" class="modal">
+    <div class="modal-content">
+        <h2>Sozlamalar</h2>
+        <label for="suhoorTime">Suhoor Vaqti (HH:MM):</label>
+        <input type="time" id="suhoorTime" value="05:00" />
+
+        <label for="iftarTime">Iftar Vaqti (HH:MM):</label>
+        <input type="time" id="iftarTime" value="18:00" />
+
+        <label for="musicVolume">Musiqa Ovozini Sozlash:</label>
+        <input type="range" id="musicVolume" min="0" max="1" step="0.05" value="0.5" />
+
+        <label for="autoInterval">Auto Iqtibos Interval (soniyada):</label>
+        <input type="number" id="autoInterval" min="5" value="10" />
+
+        <button onclick="saveSettings()">Saqlash</button>
+        <button onclick="closeSettings()">Bekor qilish</button>
+    </div>
+</div>
+
+<!-- Fon musiqasi -->
+<audio id="bgMusic" loop>
+    <source src="https://www.bensound.com/bensound-music/bensound-slowmotion.mp3" type="audio/mpeg" />
+    Your browser does not support the audio element.
+</audio>
+
+<script>
+    // Global o'zgaruvchilar
+    const quotes = [
+        "Ramazon – ro‘za, sabr va rahmat oyidir.",
+        "Bu oyda qalbingizni poklang, orzularingizga yeting.",
+        "Ramazon muborak bo‘lsin, har kuningiz muborak!",
+        "Ro‘za tut, ibodat qil, qalbingni nur bilan to‘ldir.",
+        "Ramazonda mehr-muhabbat va saxovatni unutmang.",
+        "Ushbu muborak oyda, har kimga yordam qo‘lini cho‘zing.",
+        "Sabr va duo – ro'zadorlikning yurak xotirasi."
+    ];
+    let currentQuoteIndex = 0;
+    let autoIntervalId = null;
+    let autoMode = false;
+    let autoDelay = 10000; // default: 10 soniya
+
+    const duas = [
+        "Allohimiz, ro'za davomida bizga sabr va niyat kuchi bersin.",
+        "Ey Rabbimiz, ro'zamizni qabul qil va bizga rahmat ayla.",
+        "Ro'za tutganlarga baraka va afv bersin, duolarimiz najotli bo'lsin.",
+        "Ey Rabbim, qalbimizni nur bilan to‘ldir va ro‘zamizni shifa qil.",
+        "Har bir ro'zadorga mag'firat va rahmat ulash."
+    ];
+    const tips = [
+        "Suhurda sog'lom ovqatlar tanlang va ko‘p suyuqlik iching.",
+        "Iftorda ovqatni asta-asta iste'mol qiling, haddan tashqari yengil bo'lmasin.",
+        "Roza davomida yetarlicha dam oling, faoliyatni me'yorda saqlang.",
+        "Suyuqlikni muntazam ravishda qabul qiling va tanangizni quvvatlantiring.",
+        "Meva va sabzavotlarni iste'mol qilishni unutmang."
+    ];
+    const backgrounds = [
+        "linear-gradient(to right, #2c3e50, #4ca1af)",
+        "linear-gradient(to right, #1c92d2, #f2fcfe)",
+        "linear-gradient(to right, #0f2027, #203a43, #2c5364)",
+        "linear-gradient(to right, #2b5876, #4e4376)",
+        "linear-gradient(to right, #134E5E, #71B280)"
+    ];
+
+    // Sozlamalar uchun default qiymatlar
+    let musicVolume = 0.5;
+    let suhoorTime = "05:00"; // Suhoor va iftar vaqtlarini foydalanuvchi kiritadi
+    let iftarTime = "18:00";
+    document.getElementById("bgMusic").volume = musicVolume;
+
+    // Countdown target (masalan, Eid sanasi)
+    const targetDate = new Date("2025-04-20T00:00:00");
+
+    // Ramazon boshlangan sana va davomiyligi (kunlar)
+    const ramadanStart = new Date("2025-03-23T00:00:00");
+    const ramadanDuration = 30;
+
+    // Iqtibos slider funksiyalari
+    function displayQuote(index) {
+        const quoteEl = document.getElementById("quote");
+        quoteEl.style.opacity = "0";
+        setTimeout(() => {
+            quoteEl.innerText = quotes[index];
+            quoteEl.style.animation = "fadeInText 1s ease-in-out forwards";
+        }, 300);
+    }
+    function newQuote() {
+        currentQuoteIndex = Math.floor(Math.random() * quotes.length);
+        displayQuote(currentQuoteIndex);
+    }
+    function nextQuote() {
+        currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+        displayQuote(currentQuoteIndex);
+    }
+    function prevQuote() {
+        currentQuoteIndex = (currentQuoteIndex - 1 + quotes.length) % quotes.length;
+        displayQuote(currentQuoteIndex);
+    }
+
+    // Fon rangini o'zgartirish
+    function changeBackground() {
+        const randomIndex = Math.floor(Math.random() * backgrounds.length);
+        document.body.style.background = backgrounds[randomIndex];
+    }
+
+    // Iqtibosni nusxalash
+    function copyQuote() {
+        const quoteText = document.getElementById("quote").innerText;
+        navigator.clipboard.writeText(quoteText)
+            .then(() => alert("Iqtibos nusxalandi!"))
+            .catch(() => alert("Xatolik: Nusxa olish amalga oshmadi."));
+    }
+
+    // Auto iqtibos rejimi
+    function toggleAuto() {
+        if (!autoMode) {
+            autoIntervalId = setInterval(newQuote, autoDelay);
+            autoMode = true;
+        } else {
+            clearInterval(autoIntervalId);
+            autoMode = false;
+        }
+    }
+
+    // Fon musiqasi boshqaruvi
+    function toggleMusic() {
+        const music = document.getElementById("bgMusic");
+        if (music.paused) {
+            music.play();
+        } else {
+            music.pause();
+        }
+    }
+
+    // Countdown timer
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = targetDate - now;
+        if (distance < 0) {
+            document.getElementById("countdown").innerText = "Ramazon tugadi!";
+            clearInterval(countdownInterval);
+            return;
+        }
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        document.getElementById("countdown").innerText =
+            `Qolgan vaqt: ${days} kun, ${hours} soat, ${minutes} daqiqa, ${seconds} soniya`;
+    }
+    const countdownInterval = setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // Ro'zadorlik progress bar (suhoor – iftar)
+    function updateFastProgress() {
+        const now = new Date();
+        const [suhoorHour, suhoorMinute] = suhoorTime.split(":").map(Number);
+        const suhoor = new Date(now.getFullYear(), now.getMonth(), now.getDate(), suhoorHour, suhoorMinute, 0);
+        const [iftarHour, iftarMinute] = iftarTime.split(":").map(Number);
+        const iftar = new Date(now.getFullYear(), now.getMonth(), now.getDate(), iftarHour, iftarMinute, 0);
+        const progressBar = document.getElementById("fastProgressBar");
+        const progressText = document.getElementById("fastProgressText");
+
+        // Yangilash uchun Namoz jadvalida ham ko'rsatamiz:
+        document.getElementById("fajrTime").innerText = suhoorTime;
+        document.getElementById("maghribTime").innerText = iftarTime;
+
+        if (now < suhoor) {
+            progressBar.style.width = "0%";
+            progressText.innerText = "Ro'za hali boshlanmadi";
+        } else if (now > iftar) {
+            progressBar.style.width = "100%";
+            progressText.innerText = "Ro'za yakunlandi";
+        } else {
+            const progress = ((now - suhoor) / (iftar - suhoor)) * 100;
+            progressBar.style.width = progress.toFixed(1) + "%";
+            progressText.innerText = progress.toFixed(1) + "%";
+        }
+    }
+    setInterval(updateFastProgress, 1000);
+    updateFastProgress();
+
+    // Joriy vaqtni yangilash
+    function updateCurrentTime() {
+        const now = new Date();
+        document.getElementById("currentTime").innerText = "Joriy vaqt: " + now.toLocaleTimeString();
+    }
+    setInterval(updateCurrentTime, 1000);
+    updateCurrentTime();
+
+    // Tablarni boshqarish
+    const tabHeaders = document.querySelectorAll('.tab-header');
+    tabHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            openTab(header.getAttribute('data-tab'));
+        });
+    });
+    function openTab(tabName) {
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabContents.forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(tabName).classList.add('active');
+
+        tabHeaders.forEach(header => {
+            header.classList.remove('active');
+        });
+        document.querySelector(`.tab-header[data-tab="${tabName}"]`).classList.add('active');
+    }
+
+    // Sahifani share qilish
+    function sharePage() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Ramazon Muborak, Ro\'zador!',
+                text: 'Ko‘rishingiz mumkin bo‘lgan ajoyib Ramazon sahifasi!',
+                url: window.location.href
+            })
+                .then(() => console.log('Sahifa ulashildi'))
+                .catch((error) => console.error('Xatolik:', error));
+        } else {
+            alert('Ulashish funksiyasi brauzeringizda qo‘llab-quvvatlanmaydi.');
+        }
+    }
+
+    // Modal: Sozlamalar ochish va yopish
+    function openSettings() {
+        document.getElementById("settingsModal").style.display = "flex";
+    }
+    function closeSettings() {
+        document.getElementById("settingsModal").style.display = "none";
+    }
+    function saveSettings() {
+        // Suhoor va Iftar vaqtlarini o'qish
+        suhoorTime = document.getElementById("suhoorTime").value;
+        iftarTime = document.getElementById("iftarTime").value;
+
+        const vol = parseFloat(document.getElementById("musicVolume").value);
+        musicVolume = vol;
+        document.getElementById("bgMusic").volume = musicVolume;
+
+        const intervalSec = parseInt(document.getElementById("autoInterval").value, 10);
+        autoDelay = intervalSec * 1000;
+        if (autoMode) {
+            clearInterval(autoIntervalId);
+            autoIntervalId = setInterval(newQuote, autoDelay);
+        }
+        closeSettings();
+    }
+
+    // Modal yopish (agar tashqi maydon bosilsa)
+    window.onclick = function(event) {
+        const modal = document.getElementById("settingsModal");
+        if (event.target === modal) {
+            closeSettings();
+        }
+    };
+
+    // Qo'sh namozlar va Qur'on recitation formasi
+    function saveExtraPrayers() {
+        const tahajjud = document.getElementById("tahajjud").checked;
+        const duha = document.getElementById("duha").checked;
+        const tarawih = document.getElementById("tarawih").checked;
+        const quranRecited = document.getElementById("quranRecited").value;
+        let output = "<strong>Qo'sh namozlar:</strong><br>";
+        output += tahajjud ? "Tahajjud - bajarildi<br>" : "Tahajjud - bajarilmadi<br>";
+        output += duha ? "Duha - bajarildi<br>" : "Duha - bajarilmadi<br>";
+        output += tarawih ? "Taravih - oqildi<br>" : "Taravih - oqilmadi<br>";
+        output += `<strong>Qur'on recitation:</strong> ${quranRecited ? quranRecited : 0} sahifa/juz`;
+        document.getElementById("extraPrayersOutput").innerHTML = output;
+    }
+
+    // Sahifa ochilganda, agar suhoor yoki iftar vaqti bo'sh bo'lsa, avtomatik modalni ochamiz
+    window.onload = function() {
+        if (!suhoorTime || !iftarTime) {
+            openSettings();
+        }
+    };
+
+    // Sahifa ochilganda avtomatik iqtibos chiqarish
+    newQuote();
+</script>
+</body>
+</html>
